@@ -17,10 +17,11 @@ def create_submisson_file(pred_test):
     result.head()
 
 
-X, y = load_raw_task_data()
+# Load raw data for some task.
+X, y = load_raw_task_data(task_id=3)
+
+# KFold or holdout is okay.
 n_fold = 5
-from sklearn import linear_model
-reg = linear_model.LinearRegression()
 kfold = KFold(n_splits=n_fold, random_state=1, shuffle=True)
 
 scores = list()
@@ -33,8 +34,14 @@ for fold_id, (train_idx, valid_idx) in enumerate(kfold.split(X, y)):
     valid_x = X[valid_idx]
     train_y = y[train_idx]
     valid_y = y[valid_idx]
+
+    from sklearn import linear_model
+    # You can set hyperparameter here.
+    reg = linear_model.LinearRegression()
+
     reg.fit(train_x, train_y)
     pred_y = reg.predict(valid_x)
+
     scores.append(smape(pred_y, valid_y))
     _time_cost = time.time() - _start_time
     print('This validation took %.2f seconds.' % _time_cost)
