@@ -17,8 +17,6 @@ build/*
 .vscode
 
 # temp file
-lfe/*
-data/datasets/*
 *.log
 
 smac3-output*
@@ -26,3 +24,5 @@ smac3-output*
 logs/
 
 data/
+
+.ipynb_checkpoints/
