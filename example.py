@@ -9,12 +9,21 @@ from utils.smape import smape
 from utils.dataset_loader import load_raw_task_data
 
 
-def create_submisson_file(pred_test):
+def save_task_result(task_id, pred_y):
+    np.save('data/pred_results_task-%d.npy' % task_id, pred_y)
+
+
+def create_submission_file():
+    pred_test = list()
+    for task_id in range(1, 7):
+        _pred = np.load('data/pred_results_task%d.npy' % task_id)
+        pred_test.append(_pred)
+    pred_test = np.array(pred_test).transpose()
     test_data = pd.read_csv('data/candidate_val.csv')
     pred_df = pd.DataFrame(pred_test, columns=['p%d' % i for i in range(1, 7)])
     result = pd.concat([test_data[['id']], pred_df], axis=1).reset_index(drop=True)
-    result.to_csv('result.csv', index=False)
-    result.head()
+    result.to_csv('data/result.csv', index=False)
+    print(result.head())
 
 
 # Load raw data for some task.
@@ -51,3 +60,9 @@ for fold_id, (train_idx, valid_idx) in enumerate(kfold.split(X, y)):
 
 print(np.mean(scores))
 print(np.mean(time_costs))
+
+# Inference Process.
+# 1. refit the model on whole dataset.
+# 2. predict the test data.
+# 3. for each task, save the result to file: `save_task_result(task_id, pred_y)`.
+# 4. finally, create the final submission file: `create_submission_file`.
