@@ -8,12 +8,12 @@ from sklearn.model_selection import train_test_split
 from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
 
 sys.path.append(os.getcwd())
-from utils.dataset_loader import load_raw_task_data
+from utils.dataset_loader import load_holdout_data
 from utils.smape import smape
 
 # ---CHANGE SETTINGS HERE---------------
-regressor_id = 'liblinear_svr'
-trial_num = 15
+regressor_id = 'lightgbm'
+trial_num = 10
 # evaluation_type = ['holdout', 'cv']
 evaluation_type = 'holdout'
 
@@ -47,6 +47,16 @@ def create_hyperspace(regressor_id):
               'max_leaf_nodes': hp.choice('rf_max_leaf_nodes', [None]),
               'min_impurity_decrease': hp.choice('rf_min_impurity_decrease', [0]),
               'bootstrap': hp.choice('rf_bootstrap', ["True", "False"])}
+    elif regressor_id == 'lightgbm':
+        cs = {'n_estimators': hp.randint('lgb_n_estimators', 451) + 50,
+              'num_leaves': hp.randint('lgb_num_leaves', 81) + 20,
+              'learning_rate': hp.loguniform('lgb_learning_rate', np.log(0.025), np.log(0.3)),
+              'min_child_weight': hp.randint('lgb_min_child_weight', 10) + 1,
+              'subsample': hp.uniform('lgb_subsample', 0.5, 1),
+              'colsample_bytree': hp.uniform('lgb_colsample_bytree', 0.5, 1),
+              'reg_alpha': hp.loguniform('lgb_reg_alpha', np.log(1e-10), np.log(10)),
+              'reg_lambda': hp.loguniform('lgb_reg_lambda', np.log(1e-10), np.log(10))
+              }
     elif regressor_id == 'your_regressor_id':
         pass
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
@@ -72,6 +82,9 @@ def get_regressor(_config):
     elif estimator == 'random_forest':
         from autosklearn.pipeline.components.regression.random_forest import RandomForest
         reg = RandomForest(**config)
+    elif estimator == 'lightgbm':
+        from models.lightgbm import LightGBMRegressor
+        reg = LightGBMRegressor(**config)
     elif estimator == 'your_regressor_id':
         # Based on the hyperparameter configuration `config`, construct the regressor.
         pass
@@ -84,19 +97,18 @@ def get_regressor(_config):
 
 
 # Load data.
-X, y, _ = load_raw_task_data()
+X_train, X_valid, y_train, y_valid, _, _ = load_holdout_data(task_id=3)
 
 
 def holdout_evaluation(configuration):
     print(configuration)
     reg = get_regressor(configuration)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
-                                                        shuffle=True, random_state=1)
+
     # Fit this regressor on the train data.
     print('Starting to fit a regression model - %s' % regressor_id)
     _start_time = time.time()
     reg.fit(X_train, y_train)
-    score = smape(reg.predict(X_test), y_test)
+    score = smape(reg.predict(X_valid), y_valid)
     print('This validation took %.2f seconds.' % (time.time() - _start_time))
     return score
 
