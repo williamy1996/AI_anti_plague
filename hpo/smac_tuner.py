@@ -59,14 +59,13 @@ def create_hyperspace(regressor_id):
     elif regressor_id == 'catboost':
         cs = ConfigurationSpace()
         n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
-        num_leaves = UniformIntegerHyperparameter("num_leaves", 20, 100, default_value=31)
+        max_depth = UniformIntegerHyperparameter("max_depth", 4, 15, default_value=6)
         learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default_value=0.1, log=True)
-        min_child_samples = UniformIntegerHyperparameter("min_child_samples", 1, 15, default_value=1)
         subsample = UniformFloatHyperparameter("subsample", 0.5, 1, default_value=1)
         colsample_bylevel = UniformFloatHyperparameter("colsample_bylevel", 0.5, 1, default_value=1)
         reg_lambda = UniformFloatHyperparameter("reg_lambda", 1e-10, 10, log=True, default_value=1e-10)
         loss_function = CategoricalHyperparameter("loss_function", ['RMSE', 'MAE'], default_value='RMSE')
-        cs.add_hyperparameters([n_estimators, num_leaves, learning_rate, min_child_samples, subsample,
+        cs.add_hyperparameters([n_estimators, max_depth, learning_rate, subsample,
                                 colsample_bylevel, reg_lambda, loss_function])
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
