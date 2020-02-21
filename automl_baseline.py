@@ -13,12 +13,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--task_ids', type=str, default='1,2,3,4,5,6,0')
 parser.add_argument('--method_id', type=str, default='ausk')
 parser.add_argument('--time_cost', type=int, default=3600)
+parser.add_argument('--n_jobs', type=int, default=-1)
 
 import autosklearn.metrics
 smape_error = autosklearn.metrics.make_scorer('smape', smape, optimum=0, greater_is_better=False)
 
 
-def execute_task(time_cost: int, method_id: str, task_id: int):
+def execute_task(time_cost: int, method_id: str, task_id: int, n_jobs: int):
+    if n_jobs == -1:
+        n_jobs = multiprocessing.cpu_count() - 2
     # Load raw data for some task.
     X, y, X_test = load_raw_task_data(task_id=task_id)
     import autosklearn.regression
@@ -26,7 +29,7 @@ def execute_task(time_cost: int, method_id: str, task_id: int):
         time_left_for_this_task=time_cost,
         per_run_time_limit=600,
         include_estimators=['random_forest', 'gradient_boosting', 'adaboost', 'extra_trees'],
-        n_jobs=multiprocessing.cpu_count()-1,
+        n_jobs=n_jobs,
         initial_configurations_via_metalearning=0,
         resampling_strategy='holdout',
         resampling_strategy_arguments={'train_size': 0.7},
@@ -48,6 +51,6 @@ if __name__ == "__main__":
     time_cost = args.time_cost
     for task_id in task_ids:
         if task_id != 0:
-            execute_task(time_cost, method_id, task_id)
+            execute_task(time_cost, method_id, task_id, args.n_jobs)
         else:
             create_submission_file(method_id)
