@@ -1,28 +1,36 @@
 import os
 import gc
 import sys
+import argparse
 import time
 import datetime
 import numpy as np
 from smac.scenario.scenario import Scenario
 from smac.facade.smac_facade import SMAC
-from sklearn.model_selection import train_test_split
-from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import CategoricalHyperparameter, \
-    UniformIntegerHyperparameter
-from ConfigSpace.hyperparameters import UnParametrizedHyperparameter
 from sklearn.model_selection import KFold
+from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
+    UniformIntegerHyperparameter, CategoricalHyperparameter, \
+    UnParametrizedHyperparameter, Constant
 
 sys.path.append(os.getcwd())
-from utils.dataset_loader import load_raw_task_data
+from utils.dataset_loader import load_holdout_data
 from utils.smape import smape
 
-# ---CHANGE SETTINGS HERE---------------
-regressor_id = 'liblinear_svr'
-trial_num = 50
-# evaluation_type = ['holdout', 'cv']
-evaluation_type = 'cv'
-# -----------------------------
+# Script:
+#   python3 hpo/tpe_tuner.py --algo lightgbm --iter_num 5000 --task_id
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--algo', type=str, default='lightgbm', choices=['lightgbm', 'random_forest', 'catboost'])
+parser.add_argument('--iter_num', type=int, default=500)
+parser.add_argument('--task_id', type=int, default=3)
+parser.add_argument('--data_dir', type=str, default='data/')
+args = parser.parse_args()
+
+regressor_id = args.algo
+trial_num = args.iter_num
+task_id = args.task_id
+data_dir = args.data_dir
 
 
 def create_hyperspace(regressor_id):
@@ -35,14 +43,9 @@ def create_hyperspace(regressor_id):
     elif regressor_id == 'random_forest':
         from autosklearn.pipeline.components.regression.random_forest import RandomForest
         cs = RandomForest.get_hyperparameter_search_space()
-    elif regressor_id == 'your_regressor_id':
+    elif regressor_id == 'lightgbm':
         cs = ConfigurationSpace()
-        n_neighbors = UniformIntegerHyperparameter(
-            name="n_neighbors", lower=1, upper=100, log=True, default_value=1)
-        weights = CategoricalHyperparameter(
-            name="weights", choices=["uniform", "distance"], default_value="uniform")
-        p = CategoricalHyperparameter(name="p", choices=[1, 2], default_value=2)
-        cs.add_hyperparameters([n_neighbors, weights, p])
+        pass
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
         raise ValueError('Undefined regressor identifier: %s!' % regressor_id)
@@ -64,9 +67,9 @@ def get_regressor(_config):
     elif estimator == 'random_forest':
         from autosklearn.pipeline.components.regression.random_forest import RandomForest
         reg = RandomForest(**config)
-    elif estimator == 'your_regressor_id':
-        # Based on the hyperparameter configuration `config`, construct the regressor.
-        pass
+    elif estimator == 'lightgbm':
+        from models.lightgbm import LightGBMRegressor
+        reg = LightGBMRegressor(**config)
     # ---ADD THE CONSTRUCTOR FOR YOUR REGRESSOR---------------
     else:
         raise ValueError('Undefined regressor identifier: %s!' % regressor_id)
@@ -76,18 +79,19 @@ def get_regressor(_config):
 
 
 # Load data.
-X, y, _ = load_raw_task_data()
+# X, y, _ = load_raw_task_data()
+X_train, X_valid, y_train, y_valid, _, _ = load_holdout_data(data_dir=data_dir,
+                                                             task_id=task_id)
 
 
 def holdout_evaluation(configuration):
     reg = get_regressor(configuration)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
-                                                        shuffle=True, random_state=1)
+    print(configuration.get_dictionary())
     # Fit this regressor on the train data.
     print('Starting to fit a regression model - %s' % regressor_id)
     _start_time = time.time()
     reg.fit(X_train, y_train)
-    score = smape(reg.predict(X_test), y_test)
+    score = smape(reg.predict(X_valid), y_valid)
     print('This validation took %.2f seconds.' % (time.time() - _start_time))
     return score
 
@@ -95,10 +99,10 @@ def holdout_evaluation(configuration):
 def cv_evaluation(configuration):
     n_fold = 5
     kfold = KFold(n_splits=n_fold, random_state=1, shuffle=True)
-    
+
     scores = list()
     time_costs = list()
-    
+
     for fold_id, (train_idx, valid_idx) in enumerate(kfold.split(X, y)):
         print('=> Start %d-th validation.' % fold_id)
         _start_time = time.time()
@@ -126,10 +130,11 @@ def cv_evaluation(configuration):
 
 
 def obj_func_example(configuration):
-    if evaluation_type == 'holdout':
-        return holdout_evaluation(configuration)
-    else:
-        return cv_evaluation(configuration)
+    # if evaluation_type == 'holdout':
+    #     return holdout_evaluation(configuration)
+    # else:
+    #     return cv_evaluation(configuration)
+    return holdout_evaluation(configuration)
 
 
 def tune_hyperparamerer_smac():
@@ -167,6 +172,8 @@ if __name__ == "__main__":
     inc, details = tune_hyperparamerer_smac()
     configs, results = details
     idx = np.argmin(results)
-    print('-'*50)
+    print('-' * 50)
+    print(results[idx])
+    print(idx)
     print('Results for all configurations evaluated', results)
     print('The best configuration found is', configs[idx])
