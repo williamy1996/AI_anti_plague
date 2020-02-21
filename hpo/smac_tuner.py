@@ -47,11 +47,15 @@ def create_hyperspace(regressor_id):
     elif regressor_id == 'lightgbm':
         cs = ConfigurationSpace()
         n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
-        num_leaves = UniformIntegerHyperparameter("num_leaves", 20, 100, default=31)
-        learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default=0.1, log=True)
-        min_child_weight = UniformIntegerHyperparameter("min_child_weight", 1, 10, default=1)
-
-        pass
+        num_leaves = UniformIntegerHyperparameter("num_leaves", 20, 100, default_value=31)
+        learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default_value=0.1, log=True)
+        min_child_weight = UniformIntegerHyperparameter("min_child_weight", 1, 10, default_value=1)
+        subsample = UniformFloatHyperparameter("subsample", 0.5, 1, default_value=1)
+        colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.5, 1, default_value=1)
+        reg_alpha = UniformFloatHyperparameter('reg_alpha', 1e-10, 10, log=True, default_value=1e-10)
+        reg_lambda = UniformFloatHyperparameter("reg_lambda", 1e-10, 10, log=True, default_value=1e-10)
+        cs.add_hyperparameters([n_estimators, num_leaves, learning_rate, min_child_weight, subsample,
+                              colsample_bytree, reg_alpha, reg_lambda])
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
         raise ValueError('Undefined regressor identifier: %s!' % regressor_id)
