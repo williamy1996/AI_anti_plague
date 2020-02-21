@@ -15,5 +15,5 @@ def create_submission_file(mth_id):
     from utils.dataset_loader import test_data
     pred_df = pd.DataFrame(pred_test, columns=['p%d' % i for i in range(1, 7)])
     result = pd.concat([test_data[['id']], pred_df], axis=1).reset_index(drop=True)
-    result.to_csv('data/result.csv', index=False)
+    result.to_csv('data/%s-result.csv' % mth_id, index=False)
     print(result.head())
