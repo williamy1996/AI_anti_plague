@@ -1,33 +1,30 @@
 # !/usr/bin/env python
 # coding: utf-8
 import gc
+import os
+import sys
 import time
+import argparse
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
+sys.path.append(os.getcwd())
 from utils.smape import smape
 from utils.dataset_loader import load_raw_task_data
 
-
-def save_task_result(task_id, pred_y):
-    np.save('data/pred_results_task-%d.npy' % task_id, pred_y)
-
-
-def create_submission_file():
-    pred_test = list()
-    for task_id in range(1, 7):
-        _pred = np.load('data/pred_results_task%d.npy' % task_id)
-        pred_test.append(_pred)
-    pred_test = np.array(pred_test).transpose()
-    test_data = pd.read_csv('data/candidate_val.csv')
-    pred_df = pd.DataFrame(pred_test, columns=['p%d' % i for i in range(1, 7)])
-    result = pd.concat([test_data[['id']], pred_df], axis=1).reset_index(drop=True)
-    result.to_csv('data/result.csv', index=False)
-    print(result.head())
+parser = argparse.ArgumentParser()
+# task_id=0 means aggregate all results on each task[1:6]
+# task_id=[1:7) corresponds to the sub-task id.
+parser.add_argument('--task_id', type=str, default='3')
 
 
-# Load raw data for some task.
-X, y = load_raw_task_data(task_id=3)
+def execute_task(task_id):
+    # Load raw data for some task.
+    X, y = load_raw_task_data(task_id=task_id)
+    from sklearn import linear_model
+    # You can set hyperparameter here.
+    reg = linear_model.LinearRegression()
+    reg.fit(X, y)
 
 # KFold or holdout is okay.
 n_fold = 5
