@@ -1,25 +1,29 @@
 import os
-import gc
 import sys
 import time
-import datetime
+import argparse
 import numpy as np
-from sklearn.model_selection import train_test_split
 from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
 
 sys.path.append(os.getcwd())
+
 from utils.dataset_loader import load_holdout_data
 from utils.smape import smape
 
-# ---CHANGE SETTINGS HERE---------------
-regressor_id = 'lightgbm'
-trial_num = 10
-task_id = 3
-# evaluation_type = ['holdout', 'cv']
-evaluation_type = 'holdout'
+# Script:
+#   python3 hpo/tpe_tuner.py --algo lightgbm --iter_num 5000 --task_id
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--algo', type=str, default='lightgbm', choices=['lightgbm', 'random_forest', 'catboost'])
+parser.add_argument('--iter_num', type=int, default=500)
+parser.add_argument('--task_id', type=int, default=3)
+parser.add_argument('--data_dir', type=str, default='data/')
+args = parser.parse_args()
 
-# -----------------------------
+regressor_id = args.algo
+trial_num = args.iter_num
+task_id = args.task_id
+data_dir = args.data_dir
 
 
 def create_hyperspace(regressor_id):
@@ -49,7 +53,7 @@ def create_hyperspace(regressor_id):
               'min_impurity_decrease': hp.choice('rf_min_impurity_decrease', [0]),
               'bootstrap': hp.choice('rf_bootstrap', ["True", "False"])}
     elif regressor_id == 'lightgbm':
-        cs = {'n_estimators': hp.randint('lgb_n_estimators', 451) + 50,
+        cs = {'n_estimators': hp.randint('lgb_n_estimators', 901) + 100,
               'num_leaves': hp.randint('lgb_num_leaves', 81) + 20,
               'learning_rate': hp.loguniform('lgb_learning_rate', np.log(0.025), np.log(0.3)),
               'min_child_weight': hp.randint('lgb_min_child_weight', 10) + 1,
@@ -98,7 +102,8 @@ def get_regressor(_config):
 
 
 # Load data.
-X_train, X_valid, y_train, y_valid, _, _ = load_holdout_data(task_id=task_id)
+X_train, X_valid, y_train, y_valid, _, _ = load_holdout_data(data_dir=data_dir,
+                                                             task_id=task_id)
 
 
 def holdout_evaluation(configuration):
@@ -146,6 +151,7 @@ if __name__ == "__main__":
     configs, results = details
     idx = np.argmin(results)
     print('-' * 50)
+    print(results[idx])
     print(idx)
     print('Results for all configurations evaluated', results)
     print('The best configuration found is', configs[idx])

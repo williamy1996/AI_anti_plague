@@ -14,18 +14,21 @@ class catboostRegressor():
         self.min_child_samples = min_child_samples
         self.colsample_bylevel = colsample_bylevel
         self.loss_function = loss_function
+
+        self.thread_count = -1
         self.estimator = None
 
     def fit(self, X, y, metric=smape):
         self.estimator = CatBoostRegressor(num_leaves=self.num_leaves,
-                                       learning_rate=self.learning_rate,
-                                       n_estimators=self.n_estimators,
-                                       objective='regression',
-                                       min_child_samples=self.min_child_samples,
-                                       subsample=self.subsample,
-                                       colsample_bylevel=self.colsample_bylevel,
-                                       reg_lambda=self.reg_lambda,
-                                       loss_function=self.loss_function)
+                                           learning_rate=self.learning_rate,
+                                           n_estimators=self.n_estimators,
+                                           objective='regression',
+                                           min_child_samples=self.min_child_samples,
+                                           subsample=self.subsample,
+                                           colsample_bylevel=self.colsample_bylevel,
+                                           reg_lambda=self.reg_lambda,
+                                           thread_count=self.thread_count,
+                                           loss_function=self.loss_function)
         self.estimator.fit(X, y, eval_metric=metric)
         return self
 
