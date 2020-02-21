@@ -7,59 +7,35 @@ import time
 import argparse
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import KFold
 sys.path.append(os.getcwd())
 from utils.smape import smape
 from utils.dataset_loader import load_raw_task_data
+from utils.file_operator import save_task_result, create_submission_file
 
 parser = argparse.ArgumentParser()
 # task_id=0 means aggregate all results on each task[1:6]
 # task_id=[1:7) corresponds to the sub-task id.
-parser.add_argument('--task_id', type=str, default='3')
+parser.add_argument('--task_ids', type=str, default='3')
+parser.add_argument('--method_id', type=str, default='lr')
 
 
-def execute_task(task_id):
+def execute_task(method_id: str, task_id: int):
     # Load raw data for some task.
-    X, y = load_raw_task_data(task_id=task_id)
-    from sklearn import linear_model
-    # You can set hyperparameter here.
-    reg = linear_model.LinearRegression()
+    X, y, X_test = load_raw_task_data(task_id=task_id)
+    from autosklearn.pipeline.components.regression.liblinear_svr import LibLinear_SVR
+    from sklearn.linear_model import LinearRegression
+    reg = LinearRegression()
     reg.fit(X, y)
+    y_pred = reg.predict(X_test)
+    save_task_result(method_id, task_id, y_pred)
 
-# KFold or holdout is okay.
-n_fold = 5
-kfold = KFold(n_splits=n_fold, random_state=1, shuffle=True)
 
-scores = list()
-time_costs = list()
-
-for fold_id, (train_idx, valid_idx) in enumerate(kfold.split(X, y)):
-    print('Start %d-th validation.' % fold_id)
-    _start_time = time.time()
-    train_x = X[train_idx]
-    valid_x = X[valid_idx]
-    train_y = y[train_idx]
-    valid_y = y[valid_idx]
-
-    from sklearn import linear_model
-    # You can set hyperparameter here.
-    reg = linear_model.LinearRegression()
-
-    reg.fit(train_x, train_y)
-    pred_y = reg.predict(valid_x)
-
-    scores.append(smape(pred_y, valid_y))
-    _time_cost = time.time() - _start_time
-    print('This validation took %.2f seconds.' % _time_cost)
-    time_costs.append(_time_cost)
-    del train_x, train_y, valid_x, valid_y
-    gc.collect()
-
-print(np.mean(scores))
-print(np.mean(time_costs))
-
-# Inference Process.
-# 1. refit the model on whole dataset.
-# 2. predict the test data.
-# 3. for each task, save the result to file: `save_task_result(task_id, pred_y)`.
-# 4. finally, create the final submission file: `create_submission_file`.
+if __name__ == "__main__":
+    args = parser.parse_args()
+    method_id = args.method_id
+    task_ids = [int(task_id) for task_id in args.task_ids.split(',')]
+    for task_id in task_ids:
+        if task_id != 0:
+            execute_task(method_id, task_id)
+        else:
+            create_submission_file(method_id)

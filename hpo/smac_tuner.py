@@ -18,10 +18,10 @@ from utils.dataset_loader import load_raw_task_data
 from utils.smape import smape
 
 # ---CHANGE SETTINGS HERE---------------
-regressor_id = 'random_forest'
+regressor_id = 'liblinear_svr'
 trial_num = 50
 # evaluation_type = ['holdout', 'cv']
-evaluation_type = 'holdout'
+evaluation_type = 'cv'
 # -----------------------------
 
 
@@ -76,7 +76,7 @@ def get_regressor(_config):
 
 
 # Load data.
-X, y = load_raw_task_data()
+X, y, _ = load_raw_task_data()
 
 
 def holdout_evaluation(configuration):
