@@ -25,6 +25,15 @@ def execute_task(method_id: str, task_id: int):
     from autosklearn.pipeline.components.regression.liblinear_svr import LibLinear_SVR
     from sklearn.linear_model import LinearRegression
     reg = LinearRegression()
+    # config = {'C': 7069.872331099711,
+    #           'dual': False,
+    #           'epsilon': 0.0010554244565115106,
+    #           'fit_intercept': True,
+    #           'intercept_scaling': 1,
+    #           'loss': 'squared_epsilon_insensitive',
+    #           'tol': 6.305030629525869e-05
+    #           }
+    # reg = LibLinear_SVR(**config)
     reg.fit(X, y)
     y_pred = reg.predict(X_test)
     save_task_result(method_id, task_id, y_pred)
