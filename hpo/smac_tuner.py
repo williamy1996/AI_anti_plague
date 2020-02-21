@@ -48,6 +48,9 @@ def create_hyperspace(regressor_id):
         cs = ConfigurationSpace()
         n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
         num_leaves = UniformIntegerHyperparameter("num_leaves", 20, 100, default=31)
+        learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default=0.1, log=True)
+        min_child_weight = UniformIntegerHyperparameter("min_child_weight", 1, 10, default=1)
+
         pass
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
@@ -164,7 +167,7 @@ def tune_hyperparamerer_smac():
     for key in runkeys:
         _val = runhistory.data[key][0]
         _config = runhistory.ids_config[key[0]]
-        configs.append(_config)
+        configs.append(_config.get_dictionary())
         results.append(_val)
 
     inc_idx = np.argmin(results)
@@ -184,4 +187,4 @@ if __name__ == "__main__":
     if not os.path.exists('data'):
         os.mkdir('data')
     with open('data/%s' % save_path, 'wb')as f:
-        pickle.dump([configs[idx].get_dictionary(), results[idx]], f)
+        pickle.dump([configs[idx], configs, results], f)
