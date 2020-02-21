@@ -14,6 +14,7 @@ from utils.smape import smape
 # ---CHANGE SETTINGS HERE---------------
 regressor_id = 'lightgbm'
 trial_num = 10
+task_id = 3
 # evaluation_type = ['holdout', 'cv']
 evaluation_type = 'holdout'
 
@@ -97,7 +98,7 @@ def get_regressor(_config):
 
 
 # Load data.
-X_train, X_valid, y_train, y_valid, _, _ = load_holdout_data(task_id=3)
+X_train, X_valid, y_train, y_valid, _, _ = load_holdout_data(task_id=task_id)
 
 
 def holdout_evaluation(configuration):
