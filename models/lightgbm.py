@@ -29,7 +29,7 @@ class LightGBMRegressor():
                                        reg_alpha=self.reg_alpha,
                                        reg_lambda=self.reg_lambda,
                                        n_jobs=self.n_jobs)
-        self.estimator.fit(X, y, eval_metric=metric)
+        self.estimator.fit(X, y)
         return self
 
     def predict(self, X):
