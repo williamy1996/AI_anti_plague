@@ -11,7 +11,7 @@ from utils.dataset_loader import load_holdout_data
 from utils.smape import smape
 
 # Script:
-#   python3 hpo/tpe_tuner.py --algo lightgbm --iter_num 5000 --task_id
+#   python3 hpo/tpe_tuner.py --algo lightgbm --iter_num 5000 --task_id 3 --data_dir data/p1
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--algo', type=str, default='lightgbm', choices=['lightgbm', 'random_forest', 'catboost'])
