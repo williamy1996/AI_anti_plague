@@ -29,7 +29,8 @@ class catboostRegressor():
                                            reg_lambda=self.reg_lambda,
                                            thread_count=self.thread_count,
                                            loss_function=self.loss_function,
-                                           task_type='GPU')
+                                           task_type='GPU',
+                                           devices="0-3")
         self.estimator.fit(X, y, eval_metric=metric)
         return self
 
