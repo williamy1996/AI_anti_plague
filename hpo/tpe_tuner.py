@@ -1,5 +1,6 @@
 import os
 import sys
+import pickle
 import time
 import argparse
 import numpy as np
@@ -155,3 +156,8 @@ if __name__ == "__main__":
     print(idx)
     print('Results for all configurations evaluated', results)
     print('The best configuration found is', configs[idx])
+    save_path = "hyperopt-%s-%d-%d.pkl" % (regressor_id, trial_num, task_id)
+    if not os.path.exists('data'):
+        os.mkdir('data')
+    with open('data/%s' % save_path, 'wb')as f:
+        pickle.dump([configs[idx], results[idx]])
