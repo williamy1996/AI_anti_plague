@@ -31,6 +31,7 @@ def execute_task(time_cost: int, method_id: str, task_id: int):
         resampling_strategy='holdout',
         resampling_strategy_arguments={'train_size': 0.7}
     )
+    print(automl)
     automl.fit(X, y, dataset_name='anti_plague', metric=smape_error)
 
     print(automl.show_models())
