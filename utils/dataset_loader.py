@@ -37,3 +37,20 @@ def load_holdout_data(data_dir, task_id=3):
     print('complete dataset loading...')
 
     return train_data, valid_data, train_label, valid_label, test_data, test_id
+
+
+def create_csv_for_fe(task_id=3):
+    train_data = pd.read_csv('data/candidate_train.csv')
+    train_answer = pd.read_csv('data/train_answer.csv')
+    test_data = pd.read_csv('data/candidate_val.csv')
+
+    print('complete dataset loading...')
+    train_data = train_data.merge(train_answer, on='id', how='left')
+    train_raw_data = train_data.iloc[:, 0:3177]
+    test_raw_data = test_data.iloc[:, 0:3177]
+    label = train_data['p%d' % task_id]
+    result = pd.concat([train_raw_data, label], axis=1).reset_index(drop=True)
+    result.to_csv('data/p%s.csv' % task_id, index=False)
+    print(result.head())
+    test_raw_data.to_csv('data/test_data.csv', index=False)
+    print(test_raw_data.head())
