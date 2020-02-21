@@ -160,4 +160,4 @@ if __name__ == "__main__":
     if not os.path.exists('data'):
         os.mkdir('data')
     with open('data/%s' % save_path, 'wb')as f:
-        pickle.dump([configs[idx], results[idx]])
+        pickle.dump([configs[idx], results[idx]], f)

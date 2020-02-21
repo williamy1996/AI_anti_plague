@@ -46,6 +46,8 @@ def create_hyperspace(regressor_id):
         cs = RandomForest.get_hyperparameter_search_space()
     elif regressor_id == 'lightgbm':
         cs = ConfigurationSpace()
+        n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
+        num_leaves = UniformIntegerHyperparameter("num_leaves", 20, 100, default=31)
         pass
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
@@ -182,4 +184,4 @@ if __name__ == "__main__":
     if not os.path.exists('data'):
         os.mkdir('data')
     with open('data/%s' % save_path, 'wb')as f:
-        pickle.dump([configs[idx].get_dictionary(), results[idx]])
+        pickle.dump([configs[idx].get_dictionary(), results[idx]], f)
