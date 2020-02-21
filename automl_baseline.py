@@ -30,8 +30,8 @@ def execute_task(time_cost: int, method_id: str, task_id: int):
         initial_configurations_via_metalearning=0,
         resampling_strategy='holdout',
         resampling_strategy_arguments={'train_size': 0.7},
-        ensemble_memory_limit=12288,
-        ml_memory_limit=12288,
+        ensemble_memory_limit=25600,
+        ml_memory_limit=25600,
     )
     print(automl)
     automl.fit(X, y, dataset_name='anti_plague', metric=smape_error)
