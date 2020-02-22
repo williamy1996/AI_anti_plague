@@ -100,6 +100,7 @@ def get_regressor(_config):
     estimator = _config['estimator']
     config = _config.get_dictionary().copy()
     config.pop('estimator', None)
+    config['random_state'] = 1
     if estimator == 'knn':
         from autosklearn.pipeline.components.regression.k_nearest_neighbors import KNearestNeighborsRegressor
         reg = KNearestNeighborsRegressor(**config)
