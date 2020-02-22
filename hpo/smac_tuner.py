@@ -116,7 +116,7 @@ def holdout_evaluation(configuration):
     _start_time = time.time()
     reg.fit(X_train, y_train)
     score = smape(reg.predict(X_valid), y_valid)
-    print('This validation took %.2f seconds.' % (time.time() - _start_time))
+    print('Score: %.4f, Evalidation cost: %.2f seconds.' % (score, time.time() - _start_time))
     return score
 
 
