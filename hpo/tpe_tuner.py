@@ -43,9 +43,9 @@ def create_hyperspace(regressor_id):
               'fit_intercept': hp.choice('liblinear_fit_intercept', ["True"]),
               'intercept_scaling': hp.choice('liblinear_intercept_scaling', [1])}
     elif regressor_id == 'random_forest':
-        cs = {'n_estimators': hp.choice('rf_n_estimators', [100]),
-              'criterion': hp.choice('rf_criterion', ["mse", "mae"]),
-              'max_features': hp.uniform('rf_max_features', 0, 1),
+        cs = {'n_estimators': hp.randint('rf_n_estimators', 400) + 100,
+              'criterion': hp.choice('rf_criterion', ["mse", "friedman_mse", "mae"]),
+              'max_features': hp.uniform('rf_max_features', 0.1, 1),
               'max_depth': hp.choice('rf_max_depth', [None]),
               'min_samples_split': hp.randint('rf_min_samples_split', 19) + 2,
               'min_samples_leaf': hp.randint('rf_min_samples_leaf', 20) + 1,
@@ -76,6 +76,7 @@ def get_regressor(_config):
     estimator = _config['estimator']
     config = _config.copy()
     config.pop('estimator', None)
+    config['random_state'] = 1
     if estimator == 'knn':
         from autosklearn.pipeline.components.regression.k_nearest_neighbors import KNearestNeighborsRegressor
         reg = KNearestNeighborsRegressor(**config)
