@@ -42,8 +42,29 @@ def create_hyperspace(regressor_id):
         from autosklearn.pipeline.components.regression.liblinear_svr import LibLinear_SVR
         cs = LibLinear_SVR.get_hyperparameter_search_space()
     elif regressor_id == 'random_forest':
-        from autosklearn.pipeline.components.regression.random_forest import RandomForest
-        cs = RandomForest.get_hyperparameter_search_space()
+        cs = ConfigurationSpace()
+        n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 500, default_value=200)
+        criterion = CategoricalHyperparameter("criterion",
+                                              ['mse', 'friedman_mse', 'mae'])
+        max_features = UniformFloatHyperparameter(
+            "max_features", 0.1, 1.0, default_value=1.0)
+        max_depth = UnParametrizedHyperparameter("max_depth", "None")
+        min_samples_split = UniformIntegerHyperparameter(
+            "min_samples_split", 2, 20, default_value=2)
+        min_samples_leaf = UniformIntegerHyperparameter(
+            "min_samples_leaf", 1, 20, default_value=1)
+        min_weight_fraction_leaf = \
+            UnParametrizedHyperparameter("min_weight_fraction_leaf", 0.)
+        max_leaf_nodes = UnParametrizedHyperparameter("max_leaf_nodes", "None")
+        min_impurity_decrease = UnParametrizedHyperparameter(
+            'min_impurity_decrease', 0.0)
+        bootstrap = CategoricalHyperparameter(
+            "bootstrap", ["True", "False"], default_value="True")
+        cs.add_hyperparameters([n_estimators, criterion, max_features,
+                                max_depth, min_samples_split, min_samples_leaf,
+                                min_weight_fraction_leaf, max_leaf_nodes,
+                                min_impurity_decrease, bootstrap])
+
     elif regressor_id == 'lightgbm':
         cs = ConfigurationSpace()
         n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
