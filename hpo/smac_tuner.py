@@ -80,7 +80,7 @@ def create_hyperspace(regressor_id):
     elif regressor_id == 'catboost':
         cs = ConfigurationSpace()
         n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
-        max_depth = UniformIntegerHyperparameter("max_depth", 4, 10, default_value=6)
+        max_depth = UniformIntegerHyperparameter("max_depth", 4, 12, default_value=6)
         learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default_value=0.1, log=True)
         subsample = UniformFloatHyperparameter("subsample", 0.5, 1, default_value=1)
         colsample_bylevel = UniformFloatHyperparameter("colsample_bylevel", 0.5, 1, default_value=1)
