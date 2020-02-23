@@ -68,7 +68,7 @@ def create_hyperspace(regressor_id):
     elif regressor_id == 'lightgbm':
         cs = ConfigurationSpace()
         n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
-        num_leaves = UniformIntegerHyperparameter("num_leaves", 20, 100, default_value=31)
+        num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 1023, default_value=31)
         learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default_value=0.1, log=True)
         min_child_weight = UniformIntegerHyperparameter("min_child_weight", 1, 10, default_value=1)
         subsample = UniformFloatHyperparameter("subsample", 0.5, 1, default_value=1)

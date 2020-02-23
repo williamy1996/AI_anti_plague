@@ -55,7 +55,7 @@ def create_hyperspace(regressor_id):
               'bootstrap': hp.choice('rf_bootstrap', ["True", "False"])}
     elif regressor_id == 'lightgbm':
         cs = {'n_estimators': hp.randint('lgb_n_estimators', 901) + 100,
-              'num_leaves': hp.randint('lgb_num_leaves', 81) + 20,
+              'num_leaves': hp.randint('lgb_num_leaves', 993) + 31,
               'learning_rate': hp.loguniform('lgb_learning_rate', np.log(0.025), np.log(0.3)),
               'min_child_weight': hp.randint('lgb_min_child_weight', 10) + 1,
               'subsample': hp.uniform('lgb_subsample', 0.5, 1),
