@@ -33,7 +33,7 @@ def load_holdout_data(data_dir, task_id=3):
     valid_label = valid_label['p%d' % task_id].values
     test_data = pd.read_csv(os.path.join(data_dir, 'test_feature.csv'))
     test_id = test_data['id'].values
-    test_data = test_data.drop(columns=["Unnamed: 0"])
+    test_data = test_data.drop(columns=["Unnamed: 0", "id"])
     print('complete dataset loading...')
 
     return train_data, valid_data, train_label, valid_label, test_data, test_id
