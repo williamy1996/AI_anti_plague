@@ -5,7 +5,7 @@ from utils.smape import smape
 
 class LightGBMRegressor():
     def __init__(self, n_estimators, learning_rate, num_leaves, min_child_weight,
-                 subsample, colsample_bytree, reg_alpha, reg_lambda):
+                 subsample, colsample_bytree, reg_alpha, reg_lambda, random_state):
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.num_leaves = num_leaves
@@ -16,6 +16,7 @@ class LightGBMRegressor():
         self.colsample_bytree = colsample_bytree
 
         self.n_jobs = -1
+        self.random_state = random_state
         self.estimator = None
 
     def fit(self, X, y, metric=smape):
@@ -28,6 +29,7 @@ class LightGBMRegressor():
                                        colsample_bytree=self.colsample_bytree,
                                        reg_alpha=self.reg_alpha,
                                        reg_lambda=self.reg_lambda,
+                                       random_state=self.random_state,
                                        n_jobs=self.n_jobs)
         self.estimator.fit(X, y)
         return self

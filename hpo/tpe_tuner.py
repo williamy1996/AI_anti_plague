@@ -15,7 +15,8 @@ from utils.smape import smape
 #   python3 hpo/tpe_tuner.py --algo lightgbm --iter_num 5000 --task_id 3 --data_dir data/p1
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--algo', type=str, default='lightgbm', choices=['lightgbm', 'random_forest', 'catboost'])
+parser.add_argument('--algo', type=str, default='lightgbm',
+                    choices=['lightgbm', 'random_forest', 'catboost_gpu', 'catboost_cpu'])
 parser.add_argument('--iter_num', type=int, default=500)
 parser.add_argument('--task_id', type=int, default=3)
 parser.add_argument('--data_dir', type=str, default='data/')
@@ -63,8 +64,26 @@ def create_hyperspace(regressor_id):
               'reg_alpha': hp.loguniform('lgb_reg_alpha', np.log(1e-10), np.log(10)),
               'reg_lambda': hp.loguniform('lgb_reg_lambda', np.log(1e-10), np.log(10))
               }
-    elif regressor_id == 'your_regressor_id':
-        pass
+    elif 'catboost' in regressor_id:
+        if 'cpu' in regressor_id:
+            cs = {'n_estimators': hp.randint('cat_n_estimators', 901) + 100,
+                  'max_depth': hp.randint('cat_max_depth', 9) + 4,
+                  'learning_rate': hp.loguniform('cat_learning_rate', np.log(0.01), np.log(0.3)),
+                  'subsample': hp.uniform('cat_subsample', 0.5, 1),
+                  'colsample_bylevel': hp.uniform('cat_colsample_bylevel', 0.5, 1),
+                  'reg_lambda': hp.loguniform('cat_reg_lambda', np.log(1e-10), np.log(10)),
+                  'loss_function': hp.choice('cat_loss_function', ['RMSE', 'MAE'])
+                  }
+        elif 'gpu' in regressor_id:
+            cs = {'n_estimators': hp.randint('cat_n_estimators', 9001) + 1000,
+                  'max_depth': hp.randint('cat_max_depth', 9) + 4,
+                  'learning_rate': hp.loguniform('cat_learning_rate', np.log(0.01), np.log(0.3)),
+                  'subsample': hp.uniform('cat_subsample', 0.5, 1),
+                  'min_child_samples': hp.randint('cat_min_child_samples', 15) + 1,
+                  'reg_lambda': hp.loguniform('cat_reg_lambda', np.log(1e-10), np.log(10)),
+                  'loss_function': hp.choice('cat_loss_function', ['RMSE', 'MAE'])
+                  }
+
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
         raise ValueError('Undefined regressor identifier: %s!' % regressor_id)
@@ -92,9 +111,12 @@ def get_regressor(_config):
     elif estimator == 'lightgbm':
         from models.lightgbm import LightGBMRegressor
         reg = LightGBMRegressor(**config)
-    elif estimator == 'your_regressor_id':
-        # Based on the hyperparameter configuration `config`, construct the regressor.
-        pass
+    elif 'catboost' in estimator:
+        from models.catboost import CatBoostRegressor
+        if 'gpu' in estimator:
+            config['bootstrap_type'] = 'Poisson'
+            config['task_type'] = 'GPU'
+        reg = CatBoostRegressor(**config)
     # ---ADD THE CONSTRUCTOR FOR YOUR REGRESSOR---------------
     else:
         raise ValueError('Undefined regressor identifier: %s!' % regressor_id)

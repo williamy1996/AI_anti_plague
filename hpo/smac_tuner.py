@@ -22,7 +22,8 @@ from utils.smape import smape
 #   python3 hpo/smac_tuner.py --algo lightgbm --iter_num 5000 --task_id 3 --data_dir data/p1
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--algo', type=str, default='lightgbm', choices=['lightgbm', 'random_forest', 'catboost'])
+parser.add_argument('--algo', type=str, default='lightgbm',
+                    choices=['lightgbm', 'random_forest', 'catboost_gpu', 'catboost_cpu'])
 parser.add_argument('--iter_num', type=int, default=500)
 parser.add_argument('--task_id', type=int, default=3)
 parser.add_argument('--data_dir', type=str, default='data/')
@@ -77,17 +78,24 @@ def create_hyperspace(regressor_id):
         reg_lambda = UniformFloatHyperparameter("reg_lambda", 1e-10, 10, log=True, default_value=1e-10)
         cs.add_hyperparameters([n_estimators, num_leaves, learning_rate, min_child_weight, subsample,
                                 colsample_bytree, reg_alpha, reg_lambda])
-    elif regressor_id == 'catboost':
+    elif 'catboost' in regressor_id:
         cs = ConfigurationSpace()
-        n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
         max_depth = UniformIntegerHyperparameter("max_depth", 4, 12, default_value=6)
-        learning_rate = UniformFloatHyperparameter("learning_rate", 0.025, 0.3, default_value=0.1, log=True)
+        learning_rate = UniformFloatHyperparameter("learning_rate", 0.01, 0.3, default_value=0.1, log=True)
         subsample = UniformFloatHyperparameter("subsample", 0.5, 1, default_value=1)
-        colsample_bylevel = UniformFloatHyperparameter("colsample_bylevel", 0.5, 1, default_value=1)
         reg_lambda = UniformFloatHyperparameter("reg_lambda", 1e-10, 10, log=True, default_value=1e-10)
         loss_function = CategoricalHyperparameter("loss_function", ['RMSE', 'MAE'], default_value='RMSE')
-        cs.add_hyperparameters([n_estimators, max_depth, learning_rate, subsample,
-                                colsample_bylevel, reg_lambda, loss_function])
+
+        if 'cpu' in regressor_id:
+            n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, default_value=500)
+            colsample_bylevel = UniformFloatHyperparameter("colsample_bylevel", 0.5, 1, default_value=1)
+            cs.add_hyperparameters([n_estimators, max_depth, learning_rate, subsample,
+                                    colsample_bylevel, reg_lambda, loss_function])
+        elif 'gpu' in regressor_id:
+            n_estimators = UniformIntegerHyperparameter("n_estimators", 1000, 10000, default_value=1000)
+            min_child_samples = UniformIntegerHyperparameter("min_child_samples", 1, 15, default_value=1)
+            cs.add_hyperparameters([n_estimators, max_depth, learning_rate, subsample,
+                                    min_child_samples, reg_lambda, loss_function])
     # ---ADD THE HYPERSPACE FOR YOUR REGRESSOR---------------
     else:
         raise ValueError('Undefined regressor identifier: %s!' % regressor_id)
@@ -113,8 +121,11 @@ def get_regressor(_config):
     elif estimator == 'lightgbm':
         from models.lightgbm import LightGBMRegressor
         reg = LightGBMRegressor(**config)
-    elif estimator == 'catboost':
+    elif 'catboost' in estimator:
         from models.catboost import CatBoostRegressor
+        if 'gpu' in estimator:
+            config['bootstrap_type'] = 'Poisson'
+            config['task_type'] = 'GPU'
         reg = CatBoostRegressor(**config)
     # ---ADD THE CONSTRUCTOR FOR YOUR REGRESSOR---------------
     else:
