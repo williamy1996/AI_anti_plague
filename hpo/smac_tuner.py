@@ -122,7 +122,7 @@ def get_regressor(_config):
         from models.lightgbm import LightGBMRegressor
         reg = LightGBMRegressor(**config)
     elif 'catboost' in estimator:
-        from models.catboost import CatBoostRegressor
+        from catboost import CatBoostRegressor
         if 'gpu' in estimator:
             config['bootstrap_type'] = 'Poisson'
             config['task_type'] = 'GPU'

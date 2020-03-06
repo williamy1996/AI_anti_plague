@@ -1,9 +1,9 @@
 import numpy as np
-from catboost import CatBoostRegressor as CBR
+from catboost import CatBoostRegressor
 from utils.smape import smape
 
 
-class CatBoostRegressor():
+class CBRegressor():
     def __init__(self, n_estimators, learning_rate, max_depth,
                  subsample, reg_lambda, loss_function, random_state, **kwargs):
         self.n_estimators = n_estimators
@@ -20,16 +20,16 @@ class CatBoostRegressor():
         self.estimator = None
 
     def fit(self, X, y):
-        self.estimator = CBR(max_depth=self.max_depth,
-                             learning_rate=self.learning_rate,
-                             n_estimators=self.n_estimators,
-                             objective='regression',
-                             subsample=self.subsample,
-                             reg_lambda=self.reg_lambda,
-                             thread_count=self.thread_count,
-                             loss_function=self.loss_function,
-                             colsample_bylevel=self.colsample_bylevel,
-                             random_state=self.random_state)
+        self.estimator = CatBoostRegressor(max_depth=self.max_depth,
+                                           learning_rate=self.learning_rate,
+                                           n_estimators=self.n_estimators,
+                                           objective='regression',
+                                           subsample=self.subsample,
+                                           reg_lambda=self.reg_lambda,
+                                           thread_count=self.thread_count,
+                                           loss_function=self.loss_function,
+                                           colsample_bylevel=self.colsample_bylevel,
+                                           random_state=self.random_state)
         self.estimator.fit(X, y)
         return self
 
