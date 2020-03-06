@@ -12,10 +12,11 @@ class CatBoostRegressor():
         self.subsample = subsample
         self.reg_lambda = reg_lambda
         self.loss_function = loss_function
+        self.colsample_bylevel = kwargs.get('colsample_bylevel', None)
+        self.min_child_samples = kwargs.get('min_child_samples', 1)
 
         self.thread_count = -1
         self.random_state = random_state
-        self.other_configs = kwargs
         self.estimator = None
 
     def fit(self, X, y):
@@ -27,7 +28,8 @@ class CatBoostRegressor():
                              reg_lambda=self.reg_lambda,
                              thread_count=self.thread_count,
                              loss_function=self.loss_function,
-                             random_state=self.random_state, **self.other_configs)
+                             colsample_bylevel=self.colsample_bylevel,
+                             random_state=self.random_state)
         self.estimator.fit(X, y)
         return self
 
